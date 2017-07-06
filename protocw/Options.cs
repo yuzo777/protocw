@@ -1,8 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿using System.Collections.Generic;
 using CommandLine;
 using CommandLine.Text;
 
@@ -53,19 +49,19 @@ namespace protocw
         public bool ObjectiveC { get; set; }
 
         [Option("php", DefaultValue = false, HelpText = "Genarate PHP source files")]
-        public bool Php { get; set; }
+        public bool PHP { get; set; }
 
         [Option("grpc_gateway", DefaultValue = false, HelpText = "Genarate grpc-gateway source files")]
-        public bool GrpcGateway { get; set; }
+        public bool GRPCGateway { get; set; }
 
         [Option("swagger", DefaultValue = false, HelpText = "Genarate swagger.json files")]
         public bool Swagger { get; set; }
 
-        [Option("grpc", DefaultValue = false, HelpText = "Generate gRPC source file of the language specified by the other option")]
-        public bool GRPC { get; set; }
-
         [Option("proto", DefaultValue = false, HelpText = "Generate Protocol Buffers source file of the language specified by the other option")]
         public bool Proto { get; set; }
+
+        [Option("grpc", DefaultValue = false, HelpText = "Generate gRPC source file of the language specified by the other option")]
+        public bool GRPC { get; set; }
 
         [ParserState]
         public IParserState LastParserState { get; set; }

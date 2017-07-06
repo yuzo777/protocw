@@ -22,17 +22,16 @@ namespace protocw
             try {
 
                 var options = new Options();
+
                 if (CommandLine.Parser.Default.ParseArguments(args, options))
                 {
-                    string include;
+                    if (!IsFlagsFine(options)) return;
 
-                    if (!isFlagsFine(options)) return;
+                    if (!IsExecutablesExist(options)) return;
 
-                    if (!isExecutablesFine(options)) return;
+                    if (!IsDirsFine(options)) return;
 
-                    if (!isDirsFine(options, out include)) return;
-
-                    var arguments = new Arguments(options, include);
+                    var arguments = new Arguments(options, GetProtoPath(options));
 
                     foreach (var directory in Directory.EnumerateDirectories(Path.GetFullPath(options.InputDir), "*", SearchOption.AllDirectories).ToList())
                     {
@@ -46,29 +45,29 @@ namespace protocw
 
                         if (files.Count > 0)
                         {
-                            var protos = SpacedFullPath(files);
+                            var allFiles = CombineWithSpace(files);
 
-                            if (options.Cpp) Execute(arguments.Cpp + protos);
+                            if (options.Cpp) Execute(arguments.Cpp + allFiles);
 
-                            if (options.CSharp) Execute(arguments.CSharp + protos);
+                            if (options.CSharp) Execute(arguments.CSharp + allFiles);
 
-                            if (options.Go) Execute(arguments.Go + protos);
+                            if (options.Go) Execute(arguments.Go + allFiles);
 
-                            if (options.GrpcGateway) Execute(arguments.GrpcGateway + protos);
+                            if (options.GRPCGateway) Execute(arguments.GrpcGateway + allFiles);
 
-                            if (options.Java || options.JavaLite || options.JavaNano) Execute(arguments.Java + protos);
+                            if (options.Java || options.JavaLite || options.JavaNano) Execute(arguments.Java + allFiles);
 
-                            if (options.Node) Execute(arguments.Node + protos);
+                            if (options.Node) Execute(arguments.Node + allFiles);
 
-                            if (options.ObjectiveC) Execute(arguments.ObjectiveC + protos);
+                            if (options.ObjectiveC) Execute(arguments.ObjectiveC + allFiles);
 
-                            if (options.Php) Execute(arguments.Php + protos);
+                            if (options.PHP) Execute(arguments.Php + allFiles);
 
-                            if (options.Python) Execute(arguments.Python + protos);
+                            if (options.Python) Execute(arguments.Python + allFiles);
 
-                            if (options.Ruby) Execute(arguments.Ruby + protos);
+                            if (options.Ruby) Execute(arguments.Ruby + allFiles);
 
-                            if (options.Swagger) Execute(arguments.Swagger + protos);
+                            if (options.Swagger) Execute(arguments.Swagger + allFiles);
                         }
                     }
                 }
@@ -84,7 +83,7 @@ namespace protocw
         /// </summary>
         /// <param name="files"></param>
         /// <returns></returns>
-        private static string SpacedFullPath(List<string> files)
+        private static string CombineWithSpace(List<string> files)
         {
             var builder = new StringBuilder();
 
@@ -128,39 +127,24 @@ namespace protocw
         /// </summary>
         /// <param name="options"></param>
         /// <returns></returns>
-        private static bool isFlagsFine(Options options)
+        private static bool IsFlagsFine(Options options)
         {
-            if(!(options.Cpp || options.CSharp || options.Go || options.GrpcGateway
+            if(!(options.Cpp || options.CSharp || options.Go || options.GRPCGateway
                 || options.Java || options.JavaLite || options.JavaNano || options.Node
-                || options.ObjectiveC || options.Php || options.Python || options.Ruby || options.Swagger))
+                || options.ObjectiveC || options.PHP || options.Python || options.Ruby || options.Swagger))
             {
                 Console.Error.WriteLine("No language option is specified");
                 return false;
             }
 
-            if(!(options.Proto || options.GRPC))
+            if(!(options.Proto || options.GRPC || options.Swagger))
             {
-                if (!options.Swagger)
-                {
-                    Console.Error.WriteLine("No category option is specified (--grpc or --proto)");
-                    return false;
-                }
+
+                Console.Error.WriteLine("No category option is specified (--proto or --grpc or --swagger)");
+                return false;
             }
 
-            int Java = 0;
-            if (options.Java)
-            {
-                Java++;
-            }
-            if (options.JavaLite)
-            {
-                Java++;
-            }
-            if (options.JavaNano)
-            {
-                Java++;
-            }
-            if (Java > 1)
+            if(options.Java ? (options.JavaLite || options.JavaNano) : (options.JavaLite && options.JavaNano))
             {
                 Console.Error.WriteLine("More than one Java option is specified");
                 return false;
@@ -174,121 +158,49 @@ namespace protocw
         /// </summary>
         /// <param name="options"></param>
         /// <returns></returns>
-        private static bool isExecutablesFine(Options options)
+        private static bool IsExecutablesExist(Options options)
         {
-            if(ExePath.ProcessDir.Contains(" "))
+            Func<bool, string, bool> check = (bool isOptionEnable, string path) =>
             {
-                Console.Error.WriteLine("protocw path contains spaces : " + ExePath.ProcessDir);
-                return false;
-            }
-
-            const string errorMessagePrefix = "Executable file does not exist : ";
-
-            if (!File.Exists(ExePath.Protoc))
-            {
-                Console.Error.WriteLine(errorMessagePrefix + ExePath.Cpp);
-                return false;
-            }
-            
-            if (options.Cpp)
-            {
-                if (!File.Exists(ExePath.Cpp))
+                if(isOptionEnable)
                 {
-                    Console.Error.WriteLine(errorMessagePrefix + ExePath.Cpp);
-                    return false;
+                    if (!File.Exists(path))
+                    {
+                        Console.Error.WriteLine("Executable file does not exist : " + path);
+                        return false;
+                    }
                 }
-            }
+                return true;
+            };
 
-            if(options.CSharp)
-            {
-                if (!File.Exists(ExePath.CSharp))
-                {
-                    Console.Error.WriteLine(errorMessagePrefix + ExePath.CSharp);
-                    return false;
-                }
-            }
+            if (!check(true, ExePath.Protoc)) return false;
 
-            if (options.Go)
-            {
-                if (!File.Exists(ExePath.Go))
-                {
-                    Console.Error.WriteLine(errorMessagePrefix + ExePath.Go);
-                    return false;
-                }
-            }
+            if (!check(options.Cpp, ExePath.Cpp)) return false;
 
-            if (options.GrpcGateway)
-            {
-                if (!File.Exists(ExePath.GRPCGateway))
-                {
-                    Console.Error.WriteLine(errorMessagePrefix + ExePath.GRPCGateway);
-                    return false;
-                }
-            }
+            if (!check(options.CSharp, ExePath.CSharp)) return false;
 
-            if (options.Java || options.JavaLite || options.JavaNano)
-            {
-                if (!File.Exists(ExePath.Java))
-                {
-                    Console.Error.WriteLine(errorMessagePrefix + ExePath.Java);
-                    return false;
-                }
-            }
+            if (!check(options.Go, ExePath.Go)) return false;
 
-            if (options.Node)
-            {
-                if (!File.Exists(ExePath.Node))
-                {
-                    Console.Error.WriteLine(errorMessagePrefix + ExePath.Node);
-                    return false;
-                }
-            }
+            if (!check(options.GRPCGateway, ExePath.GRPCGateway)) return false;
 
-            if (options.ObjectiveC)
-            {
-                if (!File.Exists(ExePath.ObjectiveC))
-                {
-                    Console.Error.WriteLine(errorMessagePrefix + ExePath.ObjectiveC);
-                    return false;
-                }
-            }
+            if (!check(options.Java || options.JavaLite || options.JavaNano, ExePath.Java)) return false;
 
-            if (options.Php)
-            {
-                if (!File.Exists(ExePath.Php))
-                {
-                    Console.Error.WriteLine(errorMessagePrefix + ExePath.Php);
-                    return false;
-                }
-            }
+            if (!check(options.Node, ExePath.Node)) return false;
 
-            if (options.Python)
-            {
-                if (!File.Exists(ExePath.Python))
-                {
-                    Console.Error.WriteLine(errorMessagePrefix + ExePath.Python);
-                    return false;
-                }
-            }
+            if (!check(options.ObjectiveC, ExePath.ObjectiveC)) return false;
 
-            if (options.Ruby)
-            {
-                if (!File.Exists(ExePath.Ruby))
-                {
-                    Console.Error.WriteLine(errorMessagePrefix + ExePath.Ruby);
-                    return false;
-                }
-            }
+            if (!check(options.PHP, ExePath.PHP)) return false;
 
-            if(options.Swagger)
-            {
-                if (!File.Exists(ExePath.Swagger))
-                {
-                    Console.Error.WriteLine(errorMessagePrefix + ExePath.Swagger);
-                    return false;
-                }
-            }
-            
+            if (!check(options.Python, ExePath.Python)) return false;
+
+            if (!check(options.Ruby, ExePath.Ruby)) return false;
+
+            if (!check(options.Swagger, ExePath.Swagger)) return false;
+
+            if (!check(options.Cpp, ExePath.Cpp)) return false;
+
+            if (!check(options.Cpp, ExePath.Cpp)) return false;
+
             return true;
         }
 
@@ -296,11 +208,14 @@ namespace protocw
         /// Confirm existence of directory designated as argument.
         /// </summary>
         /// <param name="options"></param>
-        /// <param name="include"></param>
         /// <returns></returns>
-        static private bool isDirsFine(Options options, out string include)
+        static private bool IsDirsFine(Options options)
         {
-            include = "";
+            if (ExePath.ProcessDir.Contains(" "))
+            {
+                Console.Error.WriteLine("protocw path contains spaces : " + ExePath.ProcessDir);
+                return false;
+            }
 
             if (!Directory.Exists(options.InputDir))
             {
@@ -326,9 +241,6 @@ namespace protocw
                 return false;
             }
 
-            var builder = new StringBuilder();
-            builder.Append("-I" + Path.GetFullPath(options.InputDir));
-
             if (options.ProtoPath != null)
             {
                 foreach (var path in options.ProtoPath)
@@ -344,13 +256,27 @@ namespace protocw
                         Console.Error.WriteLine("proto_path contains spaces : " + Path.GetFullPath(path));
                         return false;
                     }
+                }
+            }
 
+            return true;
+        }
+
+        static private string GetProtoPath(Options options)
+        {
+            var builder = new StringBuilder();
+
+            builder.Append("-I" + Path.GetFullPath(options.InputDir));
+
+            if (options.ProtoPath != null)
+            {
+                foreach (var path in options.ProtoPath)
+                {
                     builder.Append(" -I" + Path.GetFullPath(path));
                 }
             }
 
-            include = builder.ToString();
-            return true;
+            return builder.ToString();
         }
     }
 }

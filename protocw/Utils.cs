@@ -21,7 +21,7 @@ namespace protocw
         public static readonly string Java = ProcessDir + "protoc-gen-grpc-java.exe";
         public static readonly string Node = ProcessDir + "grpc_node_plugin.exe";
         public static readonly string ObjectiveC = ProcessDir + "grpc_objective_c_plugin.exe";
-        public static readonly string Php = ProcessDir + "grpc_php_plugin.exe";
+        public static readonly string PHP = ProcessDir + "grpc_php_plugin.exe";
         public static readonly string Python = ProcessDir + "grpc_python_plugin.exe";
         public static readonly string Ruby = ProcessDir + "grpc_ruby_plugin.exe";
         public static readonly string Swagger = ProcessDir + "protoc-gen-swagger.exe";
@@ -100,7 +100,7 @@ namespace protocw
 
             ObjectiveC = allProtoPath + " --plugin=protoc-gen-grpc=" + ExePath.ObjectiveC + objcOut + commonGRPCOption;
 
-            Php = allProtoPath + " --plugin=protoc-gen-grpc=" + ExePath.Php + phpOut + commonGRPCOption;
+            Php = allProtoPath + " --plugin=protoc-gen-grpc=" + ExePath.PHP + phpOut + commonGRPCOption;
 
             Python = allProtoPath + " --plugin=protoc-gen-grpc=" + ExePath.Python + pythonOut + commonGRPCOption;
 
