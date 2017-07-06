@@ -34,7 +34,7 @@ namespace protocw
 
                     var arguments = new Arguments(options, include);
 
-                    foreach (var directory in Directory.EnumerateDirectories(options.InputDir, "*", SearchOption.AllDirectories).ToList())
+                    foreach (var directory in Directory.EnumerateDirectories(Path.GetFullPath(options.InputDir), "*", SearchOption.AllDirectories).ToList())
                     {
                         if (directory.Contains(" "))
                         {
@@ -136,6 +136,15 @@ namespace protocw
             {
                 Console.Error.WriteLine("No language option is specified");
                 return false;
+            }
+
+            if(!(options.Proto || options.GRPC))
+            {
+                if (!options.Swagger)
+                {
+                    Console.Error.WriteLine("No category option is specified (--grpc or --proto)");
+                    return false;
+                }
             }
 
             int Java = 0;

@@ -64,6 +64,9 @@ namespace protocw
         [Option("grpc", DefaultValue = false, HelpText = "Generate gRPC source file of the language specified by the other option")]
         public bool GRPC { get; set; }
 
+        [Option("proto", DefaultValue = false, HelpText = "Generate Protocol Buffers source file of the language specified by the other option")]
+        public bool Proto { get; set; }
+
         [ParserState]
         public IParserState LastParserState { get; set; }
 

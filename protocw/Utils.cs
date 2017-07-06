@@ -36,9 +36,9 @@ namespace protocw
         {
             var outputDir = Path.GetFullPath(options.OutputDir);
 
-            string commonGRPCOption;
-            string goOption;
-            string javaGRPCOption;
+            string commonGRPCOption = "";
+            string goOption = "";
+            string javaGRPCOption = "";
 
             if (options.GRPC)
             {
@@ -58,40 +58,53 @@ namespace protocw
                     javaGRPCOption = " --grpc-java_out=" + outputDir;
                 }
             }
-            else
+
+            string cppOut = "";
+            string csharpOut = "";
+            string javaOut = "";
+            string jsOut = "";
+            string objcOut = "";
+            string phpOut = "";
+            string pythonOut = "";
+            string rubyOut = "";
+
+            if(options.Proto)
             {
-                commonGRPCOption = "";
+                cppOut = " --cpp_out=" + outputDir;
+
+                if (!options.GRPC)
+                {
+                    csharpOut = " --csharp_out=" + outputDir;
+                }
+
                 goOption = " --go_out=" + outputDir;
-                javaGRPCOption = "";
+                javaOut = " --java_out=" + outputDir;
+                jsOut = " --js_out=" + outputDir;
+                objcOut = " --objc_out=" + outputDir;
+                phpOut = " --php_out=" + outputDir;
+                pythonOut = " --python_out=" + outputDir;
+                rubyOut = " --ruby_out=" + outputDir;
             }
 
-            Cpp = allProtoPath + " --plugin=protoc-gen-grpc=" + ExePath.Cpp
-                + " --cpp_out=" + outputDir + commonGRPCOption;
+            Cpp = allProtoPath + " --plugin=protoc-gen-grpc=" + ExePath.Cpp + cppOut + commonGRPCOption;
 
-            CSharp = allProtoPath + " --plugin=protoc-gen-grpc=" + ExePath.CSharp
-                + " --csharp_out=" + outputDir + commonGRPCOption;
+            CSharp = allProtoPath + " --plugin=protoc-gen-grpc=" + ExePath.CSharp + csharpOut + commonGRPCOption;
 
             Go = allProtoPath + goOption;
 
             GrpcGateway = allProtoPath + " --grpc-gateway_out=logtostderr=true:" + outputDir;
 
-            Java = allProtoPath + " --plugin=protoc-gen-grpc-java=" + ExePath.Java
-                + " --java_out=" + outputDir + javaGRPCOption;
+            Java = allProtoPath + " --plugin=protoc-gen-grpc-java=" + ExePath.Java + javaOut + javaGRPCOption;
 
-            Node = allProtoPath + " --plugin=protoc-gen-grpc=" + ExePath.Node
-                + " --js_out=" + outputDir + commonGRPCOption;
+            Node = allProtoPath + " --plugin=protoc-gen-grpc=" + ExePath.Node + jsOut + commonGRPCOption;
 
-            ObjectiveC = allProtoPath + " --plugin=protoc-gen-grpc=" + ExePath.ObjectiveC
-                + " --objc_out=" + outputDir + commonGRPCOption;
+            ObjectiveC = allProtoPath + " --plugin=protoc-gen-grpc=" + ExePath.ObjectiveC + objcOut + commonGRPCOption;
 
-            Php = allProtoPath + " --plugin=protoc-gen-grpc=" + ExePath.Php
-                + " --php_out=" + outputDir + commonGRPCOption;
+            Php = allProtoPath + " --plugin=protoc-gen-grpc=" + ExePath.Php + phpOut + commonGRPCOption;
 
-            Python = allProtoPath + " --plugin=protoc-gen-grpc=" + ExePath.Python
-                + " --python_out=" + outputDir + commonGRPCOption;
+            Python = allProtoPath + " --plugin=protoc-gen-grpc=" + ExePath.Python + pythonOut + commonGRPCOption;
 
-            Ruby = allProtoPath + " --plugin=protoc-gen-grpc=" + ExePath.Ruby
-                + " --ruby_out=" + outputDir + commonGRPCOption;
+            Ruby = allProtoPath + " --plugin=protoc-gen-grpc=" + ExePath.Ruby + rubyOut + commonGRPCOption;
 
             Swagger = allProtoPath + " --swagger_out=logtostderr=true:" + outputDir;
         }
